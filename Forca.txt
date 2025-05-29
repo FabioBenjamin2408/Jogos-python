@@ -1,0 +1,77 @@
+import tkinter as tk
+from tkinter import messagebox
+import random
+
+class Forca:
+    def __init__(self, master):
+        self.master = master
+        master.title("Forca Simples")
+
+        self.palavras = ["Menus", "Ceus", "Funkeiro", "computador", "notebook"]
+        self.resetar_jogo()
+
+        self.palavra_label = tk.Label(master, text=self.mostrar_palavra(), font=("Arial", 30))
+        self.palavra_label.pack(pady=20)
+
+        self.entrada = tk.Entry(master, font=("Arial", 24), width=2, justify="center")
+        self.entrada.pack()
+
+        self.botao = tk.Button(master, text="Tentar", command=self.tentar_letra)
+        self.botao.pack(pady=10)
+
+        self.info_label = tk.Label(master, text=f"Tentativas restantes: {self.tentativas_restantes}")
+        self.info_label.pack()
+
+        self.letras_erradas_label = tk.Label(master, text="Letras erradas: ")
+        self.letras_erradas_label.pack(pady=5)
+
+    def resetar_jogo(self):
+        self.palavra = random.choice(self.palavras).lower()
+        self.letras_certas = set()
+        self.letras_erradas = set()
+        self.tentativas_restantes = 6
+
+    def mostrar_palavra(self):
+        return " ".join([letra if letra in self.letras_certas else "_" for letra in self.palavra])
+
+    def tentar_letra(self):
+        letra = self.entrada.get().lower().strip()
+        self.entrada.delete(0, tk.END)
+
+        if len(letra) != 1 or not letra.isalpha():
+            messagebox.showwarning("Entrada inválida", "Digite apenas uma letra!")
+            return
+
+        if letra in self.letras_certas or letra in self.letras_erradas:
+            messagebox.showinfo("Letra repetida", "Você já tentou essa letra!")
+            return
+
+        if letra in self.palavra:
+            self.letras_certas.add(letra)
+        else:
+            self.letras_erradas.add(letra)
+            self.tentativas_restantes -= 1
+
+        self.atualizar_interface()
+        self.verificar_fim()
+
+    def atualizar_interface(self):
+        self.palavra_label.config(text=self.mostrar_palavra())
+        self.info_label.config(text=f"Tentativas restantes: {self.tentativas_restantes}")
+        self.letras_erradas_label.config(text="Letras erradas: " + ", ".join(sorted(self.letras_erradas)))
+
+    def verificar_fim(self):
+        if all(letra in self.letras_certas for letra in self.palavra):
+            messagebox.showinfo("Parabéns!", f"Você ganhou! A palavra era '{self.palavra}'.")
+            self.resetar()
+        elif self.tentativas_restantes == 0:
+            messagebox.showinfo("Fim de jogo", f"Você perdeu! A palavra era '{self.palavra}'.")
+            self.resetar()
+
+    def resetar(self):
+        self.resetar_jogo()
+        self.atualizar_interface()
+
+root = tk.Tk()
+app = Forca(root)
+root.mainloop()
